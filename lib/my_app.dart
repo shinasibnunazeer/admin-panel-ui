@@ -1,5 +1,8 @@
 import 'package:admin_panel/navigation_menu.dart';
 import 'package:admin_panel/utils/const/colors.dart';
+import 'package:admin_panel/utils/temes/data_table_theme.dart';
+import 'package:admin_panel/utils/temes/elevated_button_theme.dart';
+import 'package:admin_panel/utils/temes/out_line_button_theme.dart';
 import 'package:admin_panel/utils/temes/text_field_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,18 +23,10 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSwatch(
             backgroundColor: AColors.backgroundColor,
           ),
+          outlinedButtonTheme: EOutlineButtonTheme.darkOutButtonThemeData,
           //box decoration
-
-          dataTableTheme: DataTableThemeData(
-            //box deco
-
-            headingTextStyle:
-                const TextStyle(color: Colors.white, fontSize: 16),
-            dataRowColor: WidgetStateColor.resolveWith(
-                (states) => AColors.backgroundColor),
-            headingRowColor: WidgetStateColor.resolveWith(
-                (states) => AColors.iconPrimaryColor),
-          ),
+          elevatedButtonTheme: EElevatedButtonTeme.lightElevatedButtonThemeData,
+          dataTableTheme: ADataTableTheme.dataTableTheme,
 
           fontFamily: GoogleFonts.poppins().fontFamily,
           //font family

@@ -14,53 +14,57 @@ class SubscribedUsersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ASubUserController());
-    controller.serchResult.clear();
 
     return DashBoardScreen(
       headerText: "Subscibed Users",
       child: Obx(() {
-        final data = controller.serchResult.isEmpty ? Data() : SerchData();
-
-        // controller.clearSearchList();
         if (controller.isLoading.value) {
           return const Center(
               child: CircularProgressIndicator(
             color: AColors.primaryColor,
           ));
-        }
-        return SizedBox(
-          width: double.infinity,
-          child: PaginatedDataTable(
-            source: data,
-            columns: [
-              const DataColumn(label: Text('Email')),
-              const DataColumn(label: Text('Phone Number'), numeric: true),
-              const DataColumn(
-                //sort
+        } else {
+          // controller.searchController.value.text.isEmpty ? Data() : Data();
+          return Obx(() {
+            // String value = controller.serachText.value;
 
-                label: Text('Current Plan'),
+            final data = controller.filterData();
+
+            return SizedBox(
+              width: double.infinity,
+              child: PaginatedDataTable(
+                source: Data(data: data),
+                columns: [
+                  const DataColumn(label: Text('Email')),
+                  const DataColumn(label: Text('Phone Number'), numeric: true),
+                  const DataColumn(
+                    //sort
+
+                    label: Text('Current Plan'),
+                  ),
+                  DataColumn(
+                    label: Row(
+                      children: [
+                        const Text('Expiry Date'),
+                        const SizedBox(width: 5),
+                        controller.asending.value
+                            ? const Icon(IconsaxBold.arrow_up_1,
+                                color: Colors.white)
+                            : const Icon(IconsaxBold.arrow_down,
+                                color: Colors.white)
+                      ],
+                    ),
+                    onSort: (columnIndex, ascending) {
+                      controller.sortData();
+                    },
+                  )
+                ],
+                dataRowMinHeight: kMinInteractiveDimension,
+                rowsPerPage: 10,
               ),
-              DataColumn(
-                label: Row(
-                  children: [
-                    const Text('Expiry Date'),
-                    const SizedBox(width: 5),
-                    controller.asending.value
-                        ? const Icon(IconsaxBold.arrow_up_1,
-                            color: Colors.white)
-                        : const Icon(IconsaxBold.arrow_down,
-                            color: Colors.white)
-                  ],
-                ),
-                onSort: (columnIndex, ascending) {
-                  controller.sortData();
-                },
-              )
-            ],
-            dataRowMinHeight: kMinInteractiveDimension,
-            rowsPerPage: 10,
-          ),
-        );
+            );
+          });
+        }
       }),
     );
   }

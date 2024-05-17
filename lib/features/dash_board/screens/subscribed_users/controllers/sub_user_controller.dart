@@ -1,7 +1,10 @@
+import 'package:admin_panel/features/dash_board/screens/subscribed_users/repositories/dash_board_repo.dart';
 import 'package:admin_panel/features/dash_board/screens/subscribed_users/models/sub_user_model.dart';
-import 'package:admin_panel/features/dash_board/screens/subscribed_users/repositories/sub_user_repo.dart';
+import 'package:admin_panel/utils/const/api.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:excel/excel.dart';
+import 'package:intl/intl.dart';
 
 class ASubUserController extends GetxController {
   static ASubUserController get instance => Get.find();
@@ -12,8 +15,6 @@ class ASubUserController extends GetxController {
 
   RxList<ASubcribedUserModel> allSubUserList = <ASubcribedUserModel>[].obs;
 
-  RxList<ASubcribedUserModel> serchResult = <ASubcribedUserModel>[].obs;
-
   //on in it
   @override
   void onInit() {
@@ -21,25 +22,50 @@ class ASubUserController extends GetxController {
     super.onInit();
   }
 
+  RxString serachText = ''.obs;
+
+  searchText(String value) {
+    serachText.value = value;
+  }
+
+  // Rx<DateTime>? startDate = DateTime.now().obs;
+  // Rx<DateTime>? endDate = DateTime.now().obs;
+
+  Rx<DateTime>? startDate = DateTime(2020).obs;
+  Rx<DateTime>? endDate = DateTime(2020).obs;
+
+  //update
+  void updateDateValues(DateTime? newStartDate, DateTime? newEndDate) {
+    startDate?.value = newStartDate!;
+    print('start date: ${startDate?.value.runtimeType}');
+
+    endDate?.value = newEndDate!;
+
+    // Explicitly refer to class-level variable using `this`
+  }
+
+  bool dateTimeIsSelected() {
+    return startDate?.value != DateTime(2020) &&
+        endDate?.value != DateTime(2020);
+  }
+
+//remove filter
+  void removeFilter() {
+    startDate?.value = DateTime(2020);
+    endDate?.value = DateTime(2020);
+  }
+
   //sort data
   void sortData() {
     asending.value = !asending.value;
 
-    serchResult.isEmpty
-        ? allSubUserList.sort((a, b) {
-            if (asending.value) {
-              return a.subscriptionEndDate.compareTo(b.subscriptionEndDate);
-            } else {
-              return b.subscriptionEndDate.compareTo(a.subscriptionEndDate);
-            }
-          })
-        : serchResult.sort((a, b) {
-            if (asending.value) {
-              return a.subscriptionEndDate.compareTo(b.subscriptionEndDate);
-            } else {
-              return b.subscriptionEndDate.compareTo(a.subscriptionEndDate);
-            }
-          });
+    allSubUserList.sort((a, b) {
+      if (asending.value) {
+        return a.subscriptionEndDate.compareTo(b.subscriptionEndDate);
+      } else {
+        return b.subscriptionEndDate.compareTo(a.subscriptionEndDate);
+      }
+    });
   }
 
   //get data
@@ -47,7 +73,8 @@ class ASubUserController extends GetxController {
     try {
       isLoading.value = true;
 
-      final value = await _subUserRepo.getSubscribedUserData();
+      final value =
+          await _subUserRepo.getUserData(whichData: apiSubUserCollection);
       allSubUserList.assignAll(value);
       sortData();
     } catch (e) {
@@ -58,34 +85,37 @@ class ASubUserController extends GetxController {
   }
 
 //search data
-  searchData(String value) {
-    if (value.isEmpty) {
-      return;
+  List<ASubcribedUserModel> searchData() {
+    if (serachText.value.isEmpty) {
+      return allSubUserList;
     }
-    final searchValue = value.toLowerCase();
+    final searchValue = serachText.value.toLowerCase();
     final searchResult = allSubUserList.where((element) {
       return element.email.toLowerCase().contains(searchValue) ||
           element.contact.toLowerCase().contains(searchValue) ||
           element.currentPlan.toLowerCase().contains(searchValue);
     }).toList();
 
-    serchResult.assignAll(searchResult);
+    return searchResult;
   }
 
   //filter data using expiry date between
   //sart date
   //end date
 
-  void filterData(DateTime? startDate, DateTime? endDate) {
+  List<ASubcribedUserModel> filterData() {
     if (startDate == null || endDate == null) {
-      return;
+      return searchData();
+    } else if (startDate!.value == DateTime(2020) &&
+        endDate!.value == DateTime(2020)) {
+      return searchData();
     }
-    final filterData = allSubUserList.where((element) {
-      return element.subscriptionEndDate.isAfter(startDate) &&
-          element.subscriptionEndDate.isBefore(endDate);
+    final filterData = searchData().where((element) {
+      return element.subscriptionEndDate.isAfter(startDate!.value) &&
+          element.subscriptionEndDate.isBefore(endDate!.value);
     }).toList();
 
-    allSubUserList.assignAll(filterData);
+    return filterData;
   }
 
   Future<void> exportToExcel() async {
@@ -104,7 +134,7 @@ class ASubUserController extends GetxController {
       ]);
 
       // 3. Add data rows
-      for (var user in allSubUserList) {
+      for (var user in filterData()) {
         sheet.appendRow([
           TextCellValue(user.email),
           TextCellValue(user.contact),
@@ -129,11 +159,4 @@ class ASubUserController extends GetxController {
 
     // 1. Create a new Excel instance
   }
-
-  //dispose
-  // @override
-  // void onClose() {
-  //   allSubUserList.clear();
-  //   super.onClose();
-  // }
 }

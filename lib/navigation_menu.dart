@@ -10,6 +10,7 @@ import 'package:admin_panel/utils/const/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:ficonsax/ficonsax.dart';
 import 'package:get/get.dart';
+import 'package:flutter/services.dart';
 
 class ANavigationMenu extends StatelessWidget {
   const ANavigationMenu({super.key});
@@ -81,12 +82,12 @@ class NavigationController extends GetxController {
 
   //4 containers
   final List<Widget> pages = [
-    SubscribedUsersScreen(),
+    const SubscribedUsersScreen(),
+    const AuthPartnersScreen(),
     const DashBoardScreen(
       headerText: "DashBoard",
     ),
     SubscribedUsersScreen(),
-    const AuthPartnersScreen(),
     const AllCoutomers(),
     Container(
       color: Colors.white,
